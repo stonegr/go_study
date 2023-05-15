@@ -3,7 +3,7 @@ package main
 import (
 	cs1 "cs"
 	"fmt"
-	controllers "gin-demos/controller"
+	controllers21321 "gin-demos/controller"
 )
 
 func main() {
@@ -23,5 +23,5 @@ func main() {
 	// r.Run()
 	fmt.Println("main")
 	cs1.Cs()
-	controllers.Cs()
+	controllers21321.Cs()
 }
