@@ -5,9 +5,8 @@ import "sync"
 type singleton struct{}
 
 var (
-	goInstance *Instance
-	ins        *singleton
-	once       sync.Once
+	ins  *singleton
+	once sync.Once
 )
 
 // 使用go 实现单例模式

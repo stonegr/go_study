@@ -127,7 +127,7 @@ require (
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.2.0 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
