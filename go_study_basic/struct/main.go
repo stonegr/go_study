@@ -1,34 +1,24 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
-type Phone interface {
-	call()
-}
-
-type NokiaPhone struct {
-}
-
-func (nokiaPhone NokiaPhone) call() {
-	fmt.Println("I am Nokia, I can call you!")
-}
-
-type IPhone struct {
-}
-
-func (iPhone IPhone) call() {
-	fmt.Println("I am iPhone, I can call you!")
+func sum(s []int, c chan int) {
+	sum := 0
+	for _, v := range s {
+		sum += v
+	}
+	c <- sum // 把 sum 发送到通道 c
 }
 
 func main() {
-	var phone Phone
+	s := []int{7, 2, 8, -9, 4, 0}
 
-	phone = new(NokiaPhone)
-	phone.call()
+	c := make(chan int, 20)
+	// c := make(chan int)
+	go sum(s[:len(s)/2], c)
+	go sum(s[len(s)/2:], c)
+	fmt.Println("cs")
+	x, y := <-c, <-c // 从通道 c 中接收
 
-	phone = new(IPhone)
-	phone.call()
-
+	fmt.Println(x, y, x+y)
 }
