@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"go_shortlink/utils"
 	"log"
 	"net/http"
-	"shortlink/utils"
 )
 
 func respondWithError(w http.ResponseWriter, err error) {

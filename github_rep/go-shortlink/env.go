@@ -1,16 +1,16 @@
 package main
 
 import (
-	"shortlink/api"
-	"shortlink/utils"
+	"go_shortlink/api"
+	"go_shortlink/utils"
 )
 
-//Env  ...
+// Env  ...
 type Env struct {
 	S api.Storage
 }
 
 func getEnv() *Env {
-	r := utils.NewRedisCli("10.40.0.200:6379", "", 1)
+	r := utils.NewRedisCli("127.0.0.1:6379", "", 3)
 	return &Env{S: r}
 }

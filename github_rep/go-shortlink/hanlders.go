@@ -3,21 +3,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"go_shortlink/utils"
 	"net/http"
-	"shortlink/utils"
 
 	"github.com/gorilla/mux"
 
 	"gopkg.in/go-playground/validator.v9"
 )
 
-//ShortRequest for request: url, expiration_in_minutes
+// ShortRequest for request: url, expiration_in_minutes
 type ShortRequest struct {
 	URL                 string `json:"url" validate:"required"`
 	ExpirationInMinutes int64  `json:"expiration_in_minutes" validate:"min=0"`
 }
 
-//ShortlinkRequest :shortlink
+// ShortlinkRequest :shortlink
 type ShortlinkRequest struct {
 	Shortlink string `json:"shortlink"`
 }
