@@ -1,5 +1,9 @@
 package main
 
+import (
+	"suiji/my_pack"
+)
+
 func main() {
 	// fmt.Println("指针处理开始")
 	// my_moudle.Do_zz()
@@ -25,5 +29,5 @@ func main() {
 
 	// 模块学习
 	// redis 操作
-
+	my_pack.Do_redis()
 }
