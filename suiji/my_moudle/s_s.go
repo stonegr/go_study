@@ -62,4 +62,15 @@ func Do_sting() {
 	//计算字符串数组的长度
 	count := len(str_arr)
 	fmt.Println(count)
+
+	// 类型转换
+	// 字符串转整数
+	s2 := "123"
+	num, _ := strconv.Atoi(s2)
+	fmt.Println(num)
+	// 整数转字符串
+	i0 := 123
+	s3 := strconv.Itoa(i0)
+	fmt.Println(s3)
+
 }
