@@ -54,4 +54,12 @@ func Do_sting() {
 
 	// 字符串包含 子串str中的任何一个字符 区分大小写
 	fmt.Println(strings.ContainsAny("hello world", "w"))
+
+	info := " 1 2 3 "
+	res := strings.TrimSpace(info)
+	//把字符串以空格分割成字符串数组
+	str_arr := strings.Split(res, " ")
+	//计算字符串数组的长度
+	count := len(str_arr)
+	fmt.Println(count)
 }
