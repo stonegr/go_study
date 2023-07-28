@@ -90,12 +90,13 @@ func Run() {
 	savePath := *spFlag
 	proxy := *pFlag
 
+	proxyURL, e := url.Parse(proxy)
+	checkErr(e)
+
 	if proxy != "" {
 		ro.Proxies = map[string]*url.URL{
-			"http": &url.URL{
-				Scheme: "http",
-				Host:   proxy,
-			},
+			proxyURL.Scheme: proxyURL,
+			"https":         proxyURL,
 		}
 	}
 
