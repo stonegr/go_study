@@ -45,6 +45,7 @@ var (
 	sFlag   = flag.Int("s", 0, "是否允许不安全的请求(默认0)")
 	spFlag  = flag.String("sp", "", "文件保存的绝对路径(默认为当前路径,建议默认值)")
 	pFlag   = flag.String("p", "", "网络http代理")
+	fFlag   = flag.String("f", "", "指定m3u8文件")
 
 	logger *log.Logger
 	ro     = &grequests.RequestOptions{
@@ -89,6 +90,7 @@ func Run() {
 	insecure := *sFlag
 	savePath := *spFlag
 	proxy := *pFlag
+	m3u8_file_path := *fFlag
 
 	proxyURL, e := url.Parse(proxy)
 	checkErr(e)
@@ -125,8 +127,12 @@ func Run() {
 
 	// 2、解析m3u8
 	m3u8Host := getHost(m3u8Url, hostType)
-	m3u8Body := getM3u8Body(m3u8Url)
-	//m3u8Body := getFromFile()
+	var m3u8Body string
+	if m3u8_file_path == "" {
+		m3u8Body = getM3u8Body(m3u8Url)
+	} else {
+		m3u8Body = getFromFile(filepath.Join(pwd, m3u8_file_path))
+	}
 	ts_key := getM3u8Key(m3u8Host, m3u8Body)
 	if ts_key != "" {
 		fmt.Printf("待解密 ts 文件 key : %s \n", ts_key)
@@ -217,8 +223,8 @@ func getTsList(host, body string) (tsList []TsInfo) {
 	return
 }
 
-func getFromFile() string {
-	data, _ := ioutil.ReadFile("./ts.txt")
+func getFromFile(p string) string {
+	data, _ := ioutil.ReadFile(p)
 	return string(data)
 }
 

@@ -14,6 +14,8 @@
                 "https://m3u.haiwaikan.com/xm3u8/9c6032cc3e80cfb5c4fa5ac3c2c6e9a4f8c0cf70baf421ead3672bb6a26837049921f11e97d0da21.m3u8",
                 "-p",
                 "http://127.0.0.1:30809",
+                "-f",
+                "cs.m3u8",
             ],
             "console": "integratedTerminal",
             "program": "${workspaceFolder}"
