@@ -1,7 +1,7 @@
-//@author:llychao<lychao_vip@163.com>
-//@contributor: Junyi<me@junyi.pw>
-//@date:2020-02-18
-//@功能:golang m3u8 video Downloader
+// @author:llychao<lychao_vip@163.com>
+// @contributor: Junyi<me@junyi.pw>
+// @date:2020-02-18
+// @功能:golang m3u8 video Downloader
 package main
 
 import (
@@ -44,6 +44,7 @@ var (
 	cFlag   = flag.String("c", "", "自定义请求cookie")
 	sFlag   = flag.Int("s", 0, "是否允许不安全的请求(默认0)")
 	spFlag  = flag.String("sp", "", "文件保存的绝对路径(默认为当前路径,建议默认值)")
+	pFlag   = flag.String("p", "", "网络http代理")
 
 	logger *log.Logger
 	ro     = &grequests.RequestOptions{
@@ -87,6 +88,16 @@ func Run() {
 	cookie := *cFlag
 	insecure := *sFlag
 	savePath := *spFlag
+	proxy := *pFlag
+
+	if proxy != "" {
+		ro.Proxies = map[string]*url.URL{
+			"http": &url.URL{
+				Scheme: "http",
+				Host:   proxy,
+			},
+		}
+	}
 
 	ro.Headers["Referer"] = getHost(m3u8Url, "apiv2")
 	if insecure != 0 {
