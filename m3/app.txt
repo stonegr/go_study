@@ -1,0 +1,4 @@
+rm -rf hb.txt && ls -l movie | tail -n +2 | awk '{print $NF}' | sed 's/^/file movie\//g' > hb.txt && ffmpeg -f concat -safe 0 -i hb.txt -c copy cs.mp4 &&rm -rf hb.txt
+
+
+rm -rf hb.txt && ls -l movie | tail -n +2 | awk "{print $NF}" | sed "s/^/file movie\//g"

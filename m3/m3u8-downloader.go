@@ -5,7 +5,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
@@ -46,6 +45,7 @@ var (
 	spFlag  = flag.String("sp", "", "文件保存的绝对路径(默认为当前路径,建议默认值)")
 	pFlag   = flag.String("p", "", "网络http代理")
 	fFlag   = flag.String("f", "", "指定m3u8文件")
+	stFlag  = flag.Bool("st", false, "保留下载的ts文件")
 
 	logger *log.Logger
 	ro     = &grequests.RequestOptions{
@@ -91,6 +91,7 @@ func Run() {
 	savePath := *spFlag
 	proxy := *pFlag
 	m3u8_file_path := *fFlag
+	is_save_ts := *stFlag
 
 	proxyURL, e := url.Parse(proxy)
 	checkErr(e)
@@ -110,7 +111,7 @@ func Run() {
 	if cookie != "" {
 		ro.Headers["Cookie"] = cookie
 	}
-	if !strings.HasPrefix(m3u8Url, "http") || m3u8Url == "" {
+	if m3u8Url == "" && m3u8_file_path == "" {
 		flag.Usage()
 		return
 	}
@@ -148,7 +149,7 @@ func Run() {
 	}
 
 	// 4、合并ts切割文件成mp4文件
-	mv := mergeTs(download_dir)
+	mv := mergeTs(download_dir, is_save_ts)
 
 	//5、输出下载视频信息
 	DrawProgressBar("Merging", float32(1), PROGRESS_WIDTH, mv)
@@ -320,25 +321,30 @@ func checkTsDownDir(dir string) bool {
 }
 
 // 合并ts文件
-func mergeTs(downloadDir string) string {
+func mergeTs(downloadDir string, is_save_ts bool) string {
 	mvName := downloadDir + ".mp4"
-	outMv, _ := os.Create(mvName)
-	defer outMv.Close()
-	writer := bufio.NewWriter(outMv)
-	err := filepath.Walk(downloadDir, func(path string, f os.FileInfo, err error) error {
-		if f == nil {
-			return err
-		}
-		if f.IsDir() || filepath.Ext(path) != ".ts" {
-			return nil
-		}
-		bytes, _ := ioutil.ReadFile(path)
-		_, err = writer.Write(bytes)
-		return err
-	})
-	checkErr(err)
-	_ = writer.Flush()
-	os.RemoveAll(downloadDir)
+	// outMv, _ := os.Create(mvName)
+	// defer outMv.Close()
+	// writer := bufio.NewWriter(outMv)
+	// err := filepath.Walk(downloadDir, func(path string, f os.FileInfo, err error) error {
+	// 	if f == nil {
+	// 		return err
+	// 	}
+	// 	if f.IsDir() || filepath.Ext(path) != ".ts" {
+	// 		return nil
+	// 	}
+	// 	bytes, _ := ioutil.ReadFile(path)
+	// 	_, err = writer.Write(bytes)
+	// 	return err
+	// })
+	// checkErr(err)
+	// _ = writer.Flush()
+	execUnixShell("rm -rf hb.txt movie.mp4 && ls -l movie | tail -n +2 | awk '{print $NF}' | sed \"s/^/file movie\\//g\" > hb.txt")
+	execUnixShell("ffmpeg -f concat -safe 0 -i hb.txt -c copy movie.mp4")
+	execUnixShell("rm -rf hb.txt")
+	if !is_save_ts {
+		os.RemoveAll(downloadDir)
+	}
 	return mvName
 }
 
@@ -364,6 +370,17 @@ func pathExists(path string) (bool, error) {
 }
 
 // 执行 shell
+func execShell(s string) {
+	cmd := exec.Command("bash", "-c", "rm -rf hb.txt && ls -l movie | tail -n +2 | awk '{print $NF}' | sed 's/^/file movie\\//g' > hb.txt")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("\n%s", out.String())
+}
+
 func execUnixShell(s string) {
 	cmd := exec.Command("bash", "-c", s)
 	var out bytes.Buffer
