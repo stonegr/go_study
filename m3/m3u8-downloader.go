@@ -149,7 +149,7 @@ func Run() {
 	}
 
 	// 4、合并ts切割文件成mp4文件
-	mv := mergeTs(download_dir, is_save_ts)
+	mv := mergeTs(download_dir, is_save_ts, movieName)
 
 	//5、输出下载视频信息
 	DrawProgressBar("Merging", float32(1), PROGRESS_WIDTH, mv)
@@ -323,7 +323,7 @@ func checkTsDownDir(dir string) bool {
 }
 
 // 合并ts文件
-func mergeTs(downloadDir string, is_save_ts bool) string {
+func mergeTs(downloadDir string, is_save_ts bool, movieName string) string {
 	mvName := downloadDir + ".mp4"
 	// outMv, _ := os.Create(mvName)
 	// defer outMv.Close()
@@ -341,8 +341,8 @@ func mergeTs(downloadDir string, is_save_ts bool) string {
 	// })
 	// checkErr(err)
 	// _ = writer.Flush()
-	execUnixShell("rm -rf hb.txt movie.mp4 && ls -l movie | tail -n +2 | awk '{print $NF}' | sed \"s/^/file movie\\//g\" > hb.txt")
-	execUnixShell("ffmpeg -f concat -safe 0 -i hb.txt -c copy movie.mp4")
+	execUnixShell(fmt.Sprintf("rm -rf hb.txt %s.mp4 && ls -l %s | tail -n +2 | awk '{print $NF}' | sed \"s/^/file %s\\//g\" > hb.txt", movieName, movieName, movieName))
+	execUnixShell(fmt.Sprintf("ffmpeg -f concat -safe 0 -i hb.txt -c copy %s.mp4", movieName))
 	execUnixShell("rm -rf hb.txt")
 	if !is_save_ts {
 		os.RemoveAll(downloadDir)
