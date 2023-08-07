@@ -129,10 +129,10 @@ func Run() {
 	// 2、解析m3u8
 	m3u8Host := getHost(m3u8Url, hostType)
 	var m3u8Body string
-	if m3u8_file_path == "" {
-		m3u8Body = getM3u8Body(m3u8Url)
-	} else {
+	if m3u8_file_path != "" {
 		m3u8Body = getFromFile(filepath.Join(pwd, m3u8_file_path))
+	} else {
+		m3u8Body = getM3u8Body(m3u8Url)
 	}
 	ts_key := getM3u8Key(m3u8Host, m3u8Body)
 	if ts_key != "" {
@@ -186,8 +186,10 @@ func getM3u8Key(host, html string) (key string) {
 			quotation_mark_pos := strings.LastIndex(line, "\"")
 			key_url := strings.Split(line[uri_pos:quotation_mark_pos], "\"")[1]
 			if !strings.Contains(line, "http") {
-				key_url = fmt.Sprintf("%s/%s", host, key_url)
+				key_url, _ = url.JoinPath(host, key_url)
+				// key_url = fmt.Sprintf("%s/%s", host, key_url)
 			}
+			fmt.Printf("提取到的key_url: %s\n", key_url)
 			res, err := grequests.Get(key_url, ro)
 			checkErr(err)
 			if res.StatusCode == 200 {
