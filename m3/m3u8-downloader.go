@@ -118,7 +118,8 @@ func Run() {
 	var download_dir string
 	pwd, _ := os.Getwd()
 	if savePath != "" {
-		pwd = savePath
+		pwd, _ = filepath.Abs(savePath)
+		fmt.Printf("程序运行目录为: %s\n", pwd)
 	}
 	// 初始化下载ts的目录，后面所有的ts文件会保存在这里
 	download_dir = filepath.Join(pwd, movieName)
@@ -149,7 +150,7 @@ func Run() {
 	}
 
 	// 4、合并ts切割文件成mp4文件
-	mv := mergeTs(download_dir, is_save_ts, movieName)
+	mv := mergeTs(download_dir, is_save_ts, movieName, pwd)
 
 	//5、输出下载视频信息
 	DrawProgressBar("Merging", float32(1), PROGRESS_WIDTH, mv)
@@ -323,7 +324,7 @@ func checkTsDownDir(dir string) bool {
 }
 
 // 合并ts文件
-func mergeTs(downloadDir string, is_save_ts bool, movieName string) string {
+func mergeTs(downloadDir string, is_save_ts bool, movieName string, pwd string) string {
 	mvName := downloadDir + ".mp4"
 	// outMv, _ := os.Create(mvName)
 	// defer outMv.Close()
@@ -341,9 +342,9 @@ func mergeTs(downloadDir string, is_save_ts bool, movieName string) string {
 	// })
 	// checkErr(err)
 	// _ = writer.Flush()
-	execUnixShell(fmt.Sprintf("rm -rf hb.txt %s.mp4 && ls -l %s | tail -n +2 | awk '{print $NF}' | sed \"s/^/file %s\\//g\" > hb.txt", movieName, movieName, movieName))
-	execUnixShell(fmt.Sprintf("ffmpeg -f concat -safe 0 -i hb.txt -c copy %s.mp4", movieName))
-	execUnixShell("rm -rf hb.txt")
+	execUnixShell(fmt.Sprintf("cd %s && rm -rf hb.txt %s.mp4 && ls -l %s | tail -n +2 | awk '{print $NF}' | sed \"s/^/file %s\\//g\" > hb.txt", pwd, movieName, movieName, movieName))
+	execUnixShell(fmt.Sprintf("cd %s && ffmpeg -f concat -safe 0 -i hb.txt -c copy %s.mp4", pwd, movieName))
+	execUnixShell(fmt.Sprintf("cd %s && rm -rf hb.txt", pwd))
 	if !is_save_ts {
 		os.RemoveAll(downloadDir)
 	}
