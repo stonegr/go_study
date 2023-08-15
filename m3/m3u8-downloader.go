@@ -118,7 +118,8 @@ func Run() {
 	var download_dir string
 	pwd, _ := os.Getwd()
 	if savePath != "" {
-		pwd = savePath
+		pwd, _ = filepath.Abs(savePath)
+		fmt.Printf("程序运行目录为: %s\n", pwd)
 	}
 	// 初始化下载ts的目录，后面所有的ts文件会保存在这里
 	download_dir = filepath.Join(pwd, movieName)
@@ -129,10 +130,10 @@ func Run() {
 	// 2、解析m3u8
 	m3u8Host := getHost(m3u8Url, hostType)
 	var m3u8Body string
-	if m3u8_file_path == "" {
-		m3u8Body = getM3u8Body(m3u8Url)
-	} else {
+	if m3u8_file_path != "" {
 		m3u8Body = getFromFile(filepath.Join(pwd, m3u8_file_path))
+	} else {
+		m3u8Body = getM3u8Body(m3u8Url)
 	}
 	ts_key := getM3u8Key(m3u8Host, m3u8Body)
 	if ts_key != "" {
@@ -149,7 +150,7 @@ func Run() {
 	}
 
 	// 4、合并ts切割文件成mp4文件
-	mv := mergeTs(download_dir, is_save_ts)
+	mv := mergeTs(download_dir, is_save_ts, movieName, pwd)
 
 	//5、输出下载视频信息
 	DrawProgressBar("Merging", float32(1), PROGRESS_WIDTH, mv)
@@ -186,8 +187,10 @@ func getM3u8Key(host, html string) (key string) {
 			quotation_mark_pos := strings.LastIndex(line, "\"")
 			key_url := strings.Split(line[uri_pos:quotation_mark_pos], "\"")[1]
 			if !strings.Contains(line, "http") {
-				key_url = fmt.Sprintf("%s/%s", host, key_url)
+				key_url, _ = url.JoinPath(host, key_url)
+				// key_url = fmt.Sprintf("%s/%s", host, key_url)
 			}
+			fmt.Printf("提取到的key_url: %s\n", key_url)
 			res, err := grequests.Get(key_url, ro)
 			checkErr(err)
 			if res.StatusCode == 200 {
@@ -321,7 +324,7 @@ func checkTsDownDir(dir string) bool {
 }
 
 // 合并ts文件
-func mergeTs(downloadDir string, is_save_ts bool) string {
+func mergeTs(downloadDir string, is_save_ts bool, movieName string, pwd string) string {
 	mvName := downloadDir + ".mp4"
 	// outMv, _ := os.Create(mvName)
 	// defer outMv.Close()
@@ -339,9 +342,9 @@ func mergeTs(downloadDir string, is_save_ts bool) string {
 	// })
 	// checkErr(err)
 	// _ = writer.Flush()
-	execUnixShell("rm -rf hb.txt movie.mp4 && ls -l movie | tail -n +2 | awk '{print $NF}' | sed \"s/^/file movie\\//g\" > hb.txt")
-	execUnixShell("ffmpeg -f concat -safe 0 -i hb.txt -c copy movie.mp4")
-	execUnixShell("rm -rf hb.txt")
+	execUnixShell(fmt.Sprintf("cd %s && rm -rf hb.txt %s.mp4 && ls -l %s | tail -n +2 | awk '{print $NF}' | sed \"s/^/file %s\\//g\" > hb.txt", pwd, movieName, movieName, movieName))
+	execUnixShell(fmt.Sprintf("cd %s && ffmpeg -f concat -safe 0 -i hb.txt -c copy %s.mp4", pwd, movieName))
+	execUnixShell(fmt.Sprintf("cd %s && rm -rf hb.txt", pwd))
 	if !is_save_ts {
 		os.RemoveAll(downloadDir)
 	}
