@@ -2,9 +2,10 @@ package server_back
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func UploadServerFile(c *gin.Context) {

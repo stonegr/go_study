@@ -1,25 +1,27 @@
-// defer1.go
 package main
 
 import (
 	"fmt"
+	"os"
 )
 
-func test1() {
-	defer func() {
-		fmt.Println("test defer")
-	}()
-	fmt.Println("test")
-}
-
-func test2() {
-	panic(1)
+func GetPathfiles(path string) []string {
+	var all_file_slice []string
+	files, _ := os.ReadDir("./cs")
+	fmt.Println(files[0].Name())
+	// sort.SliceStable(files, func(i, j int) bool {
+	// 	return files[i].ModTime().Before(files[j].ModTime())
+	// })
+	// for _, f := range files {
+	// 	all_file_slice = append(all_file_slice, f.Name())
+	// }
+	return all_file_slice
 }
 
 func main() {
-	fmt.Println("main start")
-	defer test1()
-	test2()
-	fmt.Println("main end")
-	fmt.Println("123")
+	r := GetPathfiles("./cs")
+	// for _, f := range r {
+	// 	fmt.Println(f)
+	// }
+	fmt.Println(r[0])
 }

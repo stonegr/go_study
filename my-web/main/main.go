@@ -2,15 +2,41 @@ package main
 
 // 导入gin包
 import (
+	"encoding/json"
 	"fmt"
 	"my-web/init_process"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	folderPath = "./log"
+)
+
+type Config struct {
+	StartMsg string `json:"start_msg"`
+}
+
 func init() {
+	//config
+	jsonFile, err := os.ReadFile("./config/config.json")
+	if err != nil {
+		panic(err)
+	}
+	var Myconfig Config
+	err = json.Unmarshal([]byte(jsonFile), &Myconfig)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(Myconfig.StartMsg)
+
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		os.Mkdir(folderPath, 0777)
+	}
+
 	f := init_process.InitLogger()
 	defer f.Close()
 	log.Info("日志处理器初始化完成!")

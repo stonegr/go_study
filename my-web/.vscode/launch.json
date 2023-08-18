@@ -18,7 +18,6 @@
             "request": "launch",
             "mode": "auto",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/main"
         }
     ]
