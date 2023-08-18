@@ -1,29 +1,25 @@
-package serverback
+package server_back
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
-func UploadServerFile() {
-	router := gin.Default()
-	// 设置文件上传大小限制，默认是32m
-	router.MaxMultipartMemory = 64 << 20 // 64 MiB
+func UploadServerFile(c *gin.Context) {
+	// 获取上传文件，返回的是multipart.FileHeader对象，代表一个文件，里面包含了文件名之类的详细信息
+	// file是表单字段名字
+	dir_name := c.PostForm("name")
+	file, _ := c.FormFile("file")
+	// 打印上传的文件名
+	log.Println(dir_name, file.Filename)
 
-	router.POST("/upload", func(c *gin.Context) {
-		// 获取上传文件，返回的是multipart.FileHeader对象，代表一个文件，里面包含了文件名之类的详细信息
-		// file是表单字段名字
-		file, _ := c.FormFile("file")
-		// 打印上传的文件名
-		log.Println(file.Filename)
+	// 将上传的文件，保存到./data/1111.jpg 文件中
+	err := c.SaveUploadedFile(file, fmt.Sprintf("./server_back/%s/%s", dir_name, file.Filename))
+	if err != nil {
+		panic(err)
+	}
 
-		// 将上传的文件，保存到./data/1111.jpg 文件中
-		c.SaveUploadedFile(file, "./data/1111.jpg")
-
-		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
-	})
-	router.Run(":8080")
+	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
