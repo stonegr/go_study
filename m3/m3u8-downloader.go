@@ -343,7 +343,7 @@ func mergeTs(downloadDir string, is_save_ts bool, movieName string, pwd string) 
 	// checkErr(err)
 	// _ = writer.Flush()
 	execUnixShell(fmt.Sprintf("cd %s && rm -rf hb.txt %s.mp4 && ls -l %s | tail -n +2 | awk '{print $NF}' | sed \"s/^/file %s\\//g\" > hb.txt", pwd, movieName, movieName, movieName))
-	execUnixShell(fmt.Sprintf("cd %s && ffmpeg -f concat -safe 0 -i hb.txt -c copy %s.mp4", pwd, movieName))
+	execUnixShell(fmt.Sprintf("cd %s && ffmpeg -f concat -safe 0 -i hb.txt -async 1000 -c copy %s.mp4", pwd, movieName))
 	execUnixShell(fmt.Sprintf("cd %s && rm -rf hb.txt", pwd))
 	if !is_save_ts {
 		os.RemoveAll(downloadDir)
