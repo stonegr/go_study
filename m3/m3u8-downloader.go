@@ -46,6 +46,7 @@ var (
 	pFlag   = flag.String("p", "", "网络http代理")
 	fFlag   = flag.String("f", "", "指定m3u8文件")
 	stFlag  = flag.Bool("st", false, "保留下载的ts文件")
+	newfile = flag.Bool("nm", false, "是否生成新的m3u8文件,必须在st为true的情况下，否则会删除")
 
 	logger *log.Logger
 	ro     = &grequests.RequestOptions{
@@ -92,6 +93,7 @@ func Run() {
 	proxy := *pFlag
 	m3u8_file_path := *fFlag
 	is_save_ts := *stFlag
+	newfile := *newfile
 
 	proxyURL, e := url.Parse(proxy)
 	checkErr(e)
@@ -140,6 +142,9 @@ func Run() {
 		fmt.Printf("待解密 ts 文件 key : %s \n", ts_key)
 	}
 	ts_list := getTsList(m3u8Host, m3u8Body)
+	if newfile {
+		creatNewMF(filepath.Join(download_dir, movieName+".m3u8"), ts_list, get_d(m3u8Body))
+	}
 	fmt.Println("待下载 ts 文件数量:", len(ts_list))
 
 	// 3、下载ts文件到download_dir
@@ -149,12 +154,14 @@ func Run() {
 		return
 	}
 
-	// 4、合并ts切割文件成mp4文件
-	mv := mergeTs(download_dir, is_save_ts, movieName, pwd)
+	if !newfile {
+		// 4、合并ts切割文件成mp4文件
+		mv := mergeTs(download_dir, is_save_ts, movieName, pwd)
+		//5、输出下载视频信息
+		DrawProgressBar("Merging", float32(1), PROGRESS_WIDTH, mv)
+		fmt.Printf("\n[Success] 下载保存路径：%s | 共耗时: %6.2fs\n", mv, time.Now().Sub(now).Seconds())
+	}
 
-	//5、输出下载视频信息
-	DrawProgressBar("Merging", float32(1), PROGRESS_WIDTH, mv)
-	fmt.Printf("\n[Success] 下载保存路径：%s | 共耗时: %6.2fs\n", mv, time.Now().Sub(now).Seconds())
 }
 
 // 获取m3u8地址的host
@@ -201,6 +208,21 @@ func getM3u8Key(host, html string) (key string) {
 	return
 }
 
+func get_d(html string) (key string) {
+	lines := strings.Split(html, "\n")
+	key = ""
+	for _, line := range lines {
+		if strings.Contains(line, "#EXTINF") {
+			line_cap := strings.Split(line, ":")
+			if len(line_cap) > 1 {
+				key = line_cap[len(line_cap)-1]
+				break
+			}
+		}
+	}
+	return
+}
+
 func getTsList(host, body string) (tsList []TsInfo) {
 	lines := strings.Split(body, "\n")
 	index := 0
@@ -230,6 +252,25 @@ func getTsList(host, body string) (tsList []TsInfo) {
 func getFromFile(p string) string {
 	data, _ := ioutil.ReadFile(p)
 	return string(data)
+}
+
+// 生成新的m3u8文件
+func creatNewMF(name string, p []TsInfo, d string) {
+	content := []byte(`#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:6
+#EXT-X-PLAYLIST-TYPE:VOD
+#EXT-X-MEDIA-SEQUENCE:0
+`)
+	for _, t := range p {
+		content = append(content, []byte(fmt.Sprintf("%s\n%s\n", fmt.Sprintf("#EXTINF:%s", d), t.Name))...)
+	}
+	content = append(content, []byte("#EXT-X-ENDLIST")...)
+	err := ioutil.WriteFile(name, content, 0777)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("write new m3u8 successful")
 }
 
 // 下载ts文件
