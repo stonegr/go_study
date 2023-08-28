@@ -160,6 +160,8 @@ func Run() {
 		//5、输出下载视频信息
 		DrawProgressBar("Merging", float32(1), PROGRESS_WIDTH, mv)
 		fmt.Printf("\n[Success] 下载保存路径：%s | 共耗时: %6.2fs\n", mv, time.Now().Sub(now).Seconds())
+	} else {
+		fmt.Println("")
 	}
 
 }
