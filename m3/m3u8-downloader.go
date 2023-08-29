@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -143,7 +144,8 @@ func Run() {
 	}
 	ts_list := getTsList(m3u8Host, m3u8Body)
 	if newfile {
-		creatNewMF(filepath.Join(download_dir, movieName+".m3u8"), ts_list, get_d(m3u8Body))
+		// creatNewMF(filepath.Join(download_dir, "main.m3u8"), ts_list, get_d(m3u8Body))
+		subNewM3u8(filepath.Join(download_dir, "main.m3u8"), m3u8Body, getOld(m3u8Body), "")
 	}
 	fmt.Println("待下载 ts 文件数量:", len(ts_list))
 
@@ -233,19 +235,34 @@ func getTsList(host, body string) (tsList []TsInfo) {
 		if !strings.HasPrefix(line, "#") && line != "" {
 			//有可能出现的二级嵌套格式的m3u8,请自行转换！
 			index++
+			lineCap := strings.Split(line, "/")
+			file_name := lineCap[len(lineCap)-1]
 			if strings.HasPrefix(line, "http") {
 				ts = TsInfo{
-					Name: fmt.Sprintf(TS_NAME_TEMPLATE, index),
+					Name: file_name,
 					Url:  line,
 				}
 				tsList = append(tsList, ts)
 			} else {
 				ts = TsInfo{
-					Name: fmt.Sprintf(TS_NAME_TEMPLATE, index),
-					Url:  fmt.Sprintf("%s/%s", host, line),
+					Name: file_name,
+					// Name: fmt.Sprintf(TS_NAME_TEMPLATE, index),
+					Url: fmt.Sprintf("%s/%s", host, line),
 				}
 				tsList = append(tsList, ts)
 			}
+		}
+	}
+	return
+}
+
+func getOld(body string) (OldString string) {
+	lines := strings.Split(body, "\n")
+	for _, line := range lines {
+		if !strings.HasPrefix(line, "#") && line != "" {
+			OldString_Cap := strings.SplitAfter(line, "/")
+			OldString = strings.Join(OldString_Cap[:len(OldString_Cap)-1], "")
+			break
 		}
 	}
 	return
@@ -256,13 +273,32 @@ func getFromFile(p string) string {
 	return string(data)
 }
 
+// 删除文件中的指定行
+func delLine(s *string, ds string) {
+	re := regexp.MustCompile(fmt.Sprintf("(?m)[\r\n]+^.*%s.*$", ds))
+	*s = re.ReplaceAllString(*s, "")
+}
+
+// 替换生成新的m3u8文件
+func subNewM3u8(name string, html string, old string, new string) {
+	delLine(&html, "#EXT-X-KEY")
+	var content []byte
+	if old != "" {
+		content = []byte(strings.ReplaceAll(html, old, new))
+	}
+	err := ioutil.WriteFile(name, content, 0777)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("write new m3u8 successful")
+}
+
 // 生成新的m3u8文件
 func creatNewMF(name string, p []TsInfo, d string) {
 	content := []byte(`#EXTM3U
+#EXT-X-ALLOW-CACHE:YES
 #EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:6
-#EXT-X-PLAYLIST-TYPE:VOD
-#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-TARGETDURATION:5
 `)
 	for _, t := range p {
 		content = append(content, []byte(fmt.Sprintf("%s\n%s\n", fmt.Sprintf("#EXTINF:%s", d), t.Name))...)
