@@ -285,6 +285,8 @@ func subNewM3u8(name string, html string, old string, new string) {
 	var content []byte
 	if old != "" {
 		content = []byte(strings.ReplaceAll(html, old, new))
+	} else {
+		content = []byte(html)
 	}
 	err := ioutil.WriteFile(name, content, 0777)
 	if err != nil {
