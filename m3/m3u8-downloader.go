@@ -138,7 +138,9 @@ func Run() {
 	} else {
 		m3u8Body = getM3u8Body(m3u8Url)
 	}
-	ts_key := getM3u8Key(m3u8Host, m3u8Body)
+	m3u8Body = strings.ReplaceAll(m3u8Body, "\r", "")
+	ts_key, iv := getM3u8Key(m3u8Host, m3u8Body)
+	fmt.Println("获取到的IV: ", iv)
 	if ts_key != "" {
 		fmt.Printf("待解密 ts 文件 key : %s \n", ts_key)
 	}
@@ -150,7 +152,7 @@ func Run() {
 	fmt.Println("待下载 ts 文件数量:", len(ts_list))
 
 	// 3、下载ts文件到download_dir
-	downloader(ts_list, maxGoroutines, download_dir, ts_key)
+	downloader(ts_list, maxGoroutines, download_dir, ts_key, iv)
 	if ok := checkTsDownDir(download_dir); !ok {
 		fmt.Printf("\n[Failed] 请检查url地址有效性 \n")
 		return
@@ -174,7 +176,7 @@ func getHost(Url, ht string) (host string) {
 	checkErr(err)
 	switch ht {
 	case "apiv1":
-		host = u.Scheme + "://" + u.Host + filepath.Dir(u.EscapedPath())
+		host = u.Scheme + "://" + u.Host + strings.ReplaceAll(filepath.Dir(u.EscapedPath()), "\\", "/")
 	case "apiv2":
 		host = u.Scheme + "://" + u.Host
 	}
@@ -189,7 +191,7 @@ func getM3u8Body(Url string) string {
 }
 
 // 获取m3u8加密的密钥
-func getM3u8Key(host, html string) (key string) {
+func getM3u8Key(host, html string) (key string, iv string) {
 	lines := strings.Split(html, "\n")
 	key = ""
 	for _, line := range lines {
@@ -197,6 +199,10 @@ func getM3u8Key(host, html string) (key string) {
 			uri_pos := strings.Index(line, "URI")
 			quotation_mark_pos := strings.LastIndex(line, "\"")
 			key_url := strings.Split(line[uri_pos:quotation_mark_pos], "\"")[1]
+			if strings.Contains(line, "IV") {
+				iv_pos := strings.Index(line, "IV")
+				iv = strings.Trim(strings.Split(line[iv_pos:], "=")[1], "\r")
+			}
 			if !strings.Contains(line, "http") {
 				key_url, _ = url.JoinPath(host, key_url)
 				// key_url = fmt.Sprintf("%s/%s", host, key_url)
@@ -315,11 +321,11 @@ func creatNewMF(name string, p []TsInfo, d string) {
 
 // 下载ts文件
 // @modify: 2020-08-13 修复ts格式SyncByte合并不能播放问题
-func downloadTsFile(ts TsInfo, download_dir, key string, retries int) {
+func downloadTsFile(ts TsInfo, download_dir, key string, retries int, iv string) {
 	defer func() {
 		if r := recover(); r != nil {
 			//fmt.Println("网络不稳定，正在进行断点持续下载")
-			downloadTsFile(ts, download_dir, key, retries-1)
+			downloadTsFile(ts, download_dir, key, retries-1, iv)
 		}
 	}()
 	curr_path_file := fmt.Sprintf("%s/%s", download_dir, ts.Name)
@@ -330,7 +336,7 @@ func downloadTsFile(ts TsInfo, download_dir, key string, retries int) {
 	res, err := grequests.Get(ts.Url, ro)
 	if err != nil || !res.Ok {
 		if retries > 0 {
-			downloadTsFile(ts, download_dir, key, retries-1)
+			downloadTsFile(ts, download_dir, key, retries-1, iv)
 			return
 		} else {
 			//logger.Printf("[warn] File :%s", ts.Url)
@@ -347,15 +353,15 @@ func downloadTsFile(ts TsInfo, download_dir, key string, retries int) {
 	}
 	if len(origData) == 0 || (contentLen > 0 && len(origData) < contentLen) || res.Error != nil {
 		//logger.Println("[warn] File: " + ts.Name + "res origData invalid or err：", res.Error)
-		downloadTsFile(ts, download_dir, key, retries-1)
+		downloadTsFile(ts, download_dir, key, retries-1, iv)
 		return
 	}
 	// 解密出视频 ts 源文件
 	if key != "" {
 		//解密 ts 文件，算法：aes 128 cbc pack5
-		origData, err = AesDecrypt(origData, []byte(key))
+		origData, err = AesDecrypt(origData, []byte(key), []byte(iv))
 		if err != nil {
-			downloadTsFile(ts, download_dir, key, retries-1)
+			downloadTsFile(ts, download_dir, key, retries-1, iv)
 			return
 		}
 	}
@@ -374,7 +380,7 @@ func downloadTsFile(ts TsInfo, download_dir, key string, retries int) {
 }
 
 // downloader m3u8 下载器
-func downloader(tsList []TsInfo, maxGoroutines int, downloadDir string, key string) {
+func downloader(tsList []TsInfo, maxGoroutines int, downloadDir string, key string, iv string) {
 	retry := 5 //单个 ts 下载重试次数
 	var wg sync.WaitGroup
 	limiter := make(chan struct{}, maxGoroutines) //chan struct 内存占用 0 bool 占用 1
@@ -388,7 +394,7 @@ func downloader(tsList []TsInfo, maxGoroutines int, downloadDir string, key stri
 				wg.Done()
 				<-limiter
 			}()
-			downloadTsFile(ts, downloadDir, key, retryies)
+			downloadTsFile(ts, downloadDir, key, retryies, iv)
 			downloadCount++
 			DrawProgressBar("Downloading", float32(downloadCount)/float32(tsLen), PROGRESS_WIDTH, ts.Name)
 			return
