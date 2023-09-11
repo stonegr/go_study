@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	folderPath = "./log"
+	FOLDERPATH = "./log"
 )
 
 type Config struct {
@@ -33,8 +33,8 @@ func init() {
 	}
 	fmt.Println(Myconfig.StartMsg)
 
-	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
-		os.Mkdir(folderPath, 0777)
+	if _, err := os.Stat(FOLDERPATH); os.IsNotExist(err) {
+		os.Mkdir(FOLDERPATH, 0777)
 	}
 
 	f := init_process.InitLogger()

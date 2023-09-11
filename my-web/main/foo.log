@@ -1,2 +1,0 @@
-time="2023-08-18 14:04:13" level="info" msg="日志处理器初始化完成!" func="main.init.0" file="C:/code/mine/go_study/my-web/main/main.go:16"
-time="2023-08-18 14:07:40" level="info" msg="日志处理器初始化完成!" func="main.init.0" file="C:/code/mine/go_study/my-web/main/main.go:16"

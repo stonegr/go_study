@@ -24,7 +24,7 @@ func GetCurrentDirectory() string {
 
 func CreatRouter(g *gin.Engine) {
 	// 服务器上传
-	g.MaxMultipartMemory = 500 << 20 // 64 MiB
+	g.MaxMultipartMemory = 500 << 20 // 500 MiB
 	server_route := g.Group("/server_back")
 	server_route.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
