@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"my-web/controller/server_back"
+	"my-web/middleware"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -32,6 +33,10 @@ func CreatRouter(g *gin.Engine) {
 				"msg": "ok " + GetCurrentDirectory(),
 			})
 		})
-		server_route.POST("/", server_back.UploadServerFile)
+		server_route.POST("/",
+			// middleware.ServerBackAuth0,
+			middleware.ServerBackAuth,
+			// middleware.ServerBackAuth2,
+			server_back.UploadServerFile)
 	}
 }

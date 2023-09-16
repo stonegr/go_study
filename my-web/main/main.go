@@ -13,10 +13,6 @@ import (
 	"github.com/natefinch/lumberjack"
 )
 
-const (
-	FOLDERPATH = "./log"
-)
-
 func init() {
 	// 日志
 	if _, err := os.Stat(init_process.Myconfig.LogDir); os.IsNotExist(err) {

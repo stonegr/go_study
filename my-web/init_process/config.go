@@ -10,7 +10,7 @@ var Myconfig Config
 func init() {
 	//config
 	var jsonFile []byte
-	if jsonByte, err := os.ReadFile("./config/config.json"); err != nil {
+	if jsonByte, err := os.ReadFile("./config.json"); err != nil {
 		panic(err)
 	} else {
 		jsonFile = jsonByte

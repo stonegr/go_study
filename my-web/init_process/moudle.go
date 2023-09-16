@@ -5,4 +5,11 @@ type Config struct {
 	LogDir  string `json:"logdir"`
 	MaxFile int    `json:"max_file"`
 	Debug   bool
+	// MachineAuth []MachineItem `json:"machine_auth"`
+	MachineAuth map[string]string `json:"machine_auth"`
+}
+
+type MachineItem struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }
