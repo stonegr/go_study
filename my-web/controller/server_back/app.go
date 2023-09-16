@@ -28,7 +28,7 @@ func UploadServerFile(c *gin.Context) {
 	}
 
 	// 将上传的文件，保存到./data/1111.jpg 文件中
-	if err := c.SaveUploadedFile(&server_up_fieled.File, file_path); err != nil {
+	if err := c.SaveUploadedFile(server_up_fieled.File, file_path); err != nil {
 		c.String(http.StatusForbidden, fmt.Sprint(err))
 		log.Error(err)
 		return

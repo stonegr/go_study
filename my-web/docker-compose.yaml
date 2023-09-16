@@ -3,7 +3,7 @@ services:
 
   go-web:
     build:
-      context: go-.
+      context: .
       dockerfile: dockerfile
       args:
         buildno: 1
@@ -11,8 +11,8 @@ services:
     restart: always
     # ports:
     #   - "8080:8080"
-    expose:
-      - 8080
+    # expose:
+    #   - 8080
     networks:
       - web_web
     volumes:
