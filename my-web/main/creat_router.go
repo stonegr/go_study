@@ -26,17 +26,22 @@ func GetCurrentDirectory() string {
 func CreatRouter(g *gin.Engine) {
 	// 服务器上传
 	g.MaxMultipartMemory = 500 << 20 // 500 MiB
-	server_route := g.Group("/server_back")
+
+	api_group := g.Group("/go-api")
+
 	{
-		server_route.GET("/", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"msg": "ok " + GetCurrentDirectory(),
+		server_back_route := api_group.Group("/server_back")
+		{
+			server_back_route.GET("/", func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{
+					"msg": "ok " + GetCurrentDirectory(),
+				})
 			})
-		})
-		server_route.POST("/",
-			// middleware.ServerBackAuth0,
-			middleware.ServerBackAuth,
-			// middleware.ServerBackAuth2,
-			server_back.UploadServerFile)
+			server_back_route.POST("/",
+				// middleware.ServerBackAuth0,
+				middleware.ServerBackAuth,
+				// middleware.ServerBackAuth2,
+				server_back.UploadServerFile)
+		}
 	}
 }
