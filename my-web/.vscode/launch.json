@@ -18,6 +18,10 @@
             "request": "launch",
             "mode": "auto",
             "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "MODE": "DEV1"
+            },
             "program": "${workspaceFolder}/main"
         }
     ]
