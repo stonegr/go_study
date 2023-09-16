@@ -1,4 +1,4 @@
-FROM golang:1.20.4-alpine
+FROM golang:1.20.4-alpine as builder
 ENV GO111MODULE=auto \
     # GOPROXY=https://goproxy.cn,direct \
     CGO_ENABLED=0 \
@@ -6,6 +6,10 @@ ENV GO111MODULE=auto \
     GOARCH=amd64
 COPY . /root/code/
 WORKDIR /root/code
-RUN go mod tidy
+RUN go build -o app ./main
+
+FROM alpine:3.18 as prod
+WORKDIR /root/
+COPY --from=0 /root/code/app .
 EXPOSE 8080
-CMD [ "go","run","main/*.go" ]
+CMD ["./app"]
