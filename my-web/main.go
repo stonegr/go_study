@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"my-web/create_router"
 	"my-web/init_process"
 	"net/http"
 	"os"
@@ -75,7 +76,7 @@ func main() {
 			"message": "pong",
 		})
 	})
-	CreatRouter(r)
+	create_router.CreatRouter(r)
 
 	r.Run() // 监听并在 0.0.0.0:8080 上启动服务
 }

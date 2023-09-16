@@ -13,6 +13,18 @@
             "program": "${file}"
         },
         {
+            "name": "启动项目-main.go",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "MODE": "DEV1"
+            },
+            "program": "main.go"
+        },
+        {
             "name": "启动项目",
             "type": "go",
             "request": "launch",
