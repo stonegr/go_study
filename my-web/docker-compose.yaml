@@ -1,0 +1,19 @@
+version: '3'
+services:
+
+  go-web:
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        buildno: 1
+    command: go run main/*.go
+    restart: always
+    # ports:
+    #   - "8080:8080"
+    expose:
+      - 8080
+    volumes:
+      - /etc/code/conf/go-web/config/config.josn:/root/code/config.json
+      - /etc/code/logs/go-web:/root/code/log
+    container_name: go-web

@@ -1,0 +1,11 @@
+FROM golang:1.20.4-alpine
+ENV GO111MODULE=auto \
+    # GOPROXY=https://goproxy.cn,direct \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+COPY . /root/code/
+WORKDIR /root/code
+RUN go mod tidy
+EXPOSE 8080
+CMD [ "go","run","main/*.go" ]
