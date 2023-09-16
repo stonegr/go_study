@@ -17,7 +17,7 @@ func UploadServerFile(c *gin.Context) {
 		log.Error(err)
 		return
 	}
-	log.Println(server_up_fieled.Name, server_up_fieled.File.Filename)
+	// log.Println(server_up_fieled.Name, server_up_fieled.File.Filename)
 
 	file_path := fmt.Sprintf("./%s/%s/%s", init_process.Myconfig.BackDir, server_up_fieled.Name, server_up_fieled.File.Filename)
 
@@ -32,6 +32,8 @@ func UploadServerFile(c *gin.Context) {
 		c.String(http.StatusForbidden, fmt.Sprint(err))
 		log.Error(err)
 		return
+	} else {
+		log.Info(fmt.Sprintf("%s成功上传: %s", server_up_fieled.Name, server_up_fieled.File.Filename))
 	}
 
 	_ = DealWithFiles(path.Join(init_process.Myconfig.BackDir, server_up_fieled.Name), init_process.Myconfig.MaxFile)
