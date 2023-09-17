@@ -13,3 +13,7 @@ type MachineItem struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 }
+
+const (
+	XRAYSCRIPTPATH = "/etc/code/conf/xray_doing/ui.sh"
+)

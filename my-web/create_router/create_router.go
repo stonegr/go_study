@@ -44,4 +44,10 @@ func CreatRouter(g *gin.Engine) {
 				server_back.UploadServerFile)
 		}
 	}
+	// {
+	// 	common_api_route := api_group.Group("/common")
+	// 	{
+	// 		common_api_route.GET("/ll", common.GetXrayLl)
+	// 	}
+	// }
 }
