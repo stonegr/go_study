@@ -250,10 +250,12 @@ func getTsList(host, body string) (tsList []TsInfo) {
 				}
 				tsList = append(tsList, ts)
 			} else {
+				_url, _ := url.JoinPath(host, line)
 				ts = TsInfo{
 					Name: file_name,
 					// Name: fmt.Sprintf(TS_NAME_TEMPLATE, index),
-					Url: fmt.Sprintf("%s/%s", host, line),
+					// Url: fmt.Sprintf("%s/%s", host, line),
+					Url: _url,
 				}
 				tsList = append(tsList, ts)
 			}
