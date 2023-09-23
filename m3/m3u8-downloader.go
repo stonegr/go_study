@@ -86,7 +86,7 @@ func Run() {
 	flag.Parse()
 	m3u8Url := *urlFlag
 	maxGoroutines := *nFlag
-	hostType := *htFlag
+	// hostType := *htFlag
 	movieName := *oFlag
 	cookie := *cFlag
 	insecure := *sFlag
@@ -131,7 +131,7 @@ func Run() {
 	}
 
 	// 2、解析m3u8
-	m3u8Host := getHost(m3u8Url, hostType)
+	// m3u8Host := getHost(m3u8Url, hostType)
 	var m3u8Body string
 	if m3u8_file_path != "" {
 		m3u8Body = getFromFile(filepath.Join(pwd, m3u8_file_path))
@@ -139,12 +139,12 @@ func Run() {
 		m3u8Body = getM3u8Body(m3u8Url)
 	}
 	m3u8Body = strings.ReplaceAll(m3u8Body, "\r", "")
-	ts_key, iv := getM3u8Key(m3u8Host, m3u8Body)
+	ts_key, iv := getM3u8Key(m3u8Url, m3u8Body)
 	fmt.Println("获取到的IV: ", iv)
 	if ts_key != "" {
 		fmt.Printf("待解密 ts 文件 key : %s \n", ts_key)
 	}
-	ts_list := getTsList(m3u8Host, m3u8Body)
+	ts_list := getTsList(m3u8Url, m3u8Body)
 	if newfile {
 		// creatNewMF(filepath.Join(download_dir, "main.m3u8"), ts_list, get_d(m3u8Body))
 		subNewM3u8(filepath.Join(download_dir, "main.m3u8"), m3u8Body, getOld(m3u8Body), "")
@@ -183,6 +183,20 @@ func getHost(Url, ht string) (host string) {
 	return
 }
 
+// 生成url
+func generate_url_path(base_url, new_path string) (new_url string) {
+	u, err := url.Parse(base_url)
+	checkErr(err)
+	var host string
+	if strings.HasPrefix(new_path, "/") {
+		host = u.Scheme + "://" + u.Host
+	} else {
+		host = u.Scheme + "://" + u.Host + strings.ReplaceAll(filepath.Dir(u.EscapedPath()), "\\", "/")
+	}
+	new_url, _ = url.JoinPath(host, new_path)
+	return
+}
+
 // 获取m3u8地址的内容体
 func getM3u8Body(Url string) string {
 	r, err := grequests.Get(Url, ro)
@@ -204,8 +218,9 @@ func getM3u8Key(host, html string) (key string, iv string) {
 				iv = strings.Trim(strings.Split(line[iv_pos:], "=")[1], "\r")
 			}
 			if !strings.Contains(line, "http") {
-				key_url, _ = url.JoinPath(host, key_url)
+				// key_url, _ = url.JoinPath(host, key_url)
 				// key_url = fmt.Sprintf("%s/%s", host, key_url)
+				key_url = generate_url_path(host, key_url)
 			}
 			fmt.Printf("提取到的key_url: %s\n", key_url)
 			res, err := grequests.Get(key_url, ro)
@@ -250,7 +265,7 @@ func getTsList(host, body string) (tsList []TsInfo) {
 				}
 				tsList = append(tsList, ts)
 			} else {
-				_url, _ := url.JoinPath(host, line)
+				_url := generate_url_path(host, line)
 				ts = TsInfo{
 					Name: file_name,
 					// Name: fmt.Sprintf(TS_NAME_TEMPLATE, index),
@@ -551,7 +566,7 @@ func AesEncrypt(origData, key []byte, ivs ...[]byte) ([]byte, error) {
 	return crypted, nil
 }
 
-func AesDecrypt(crypted, key []byte, ivs ...[]byte) ([]byte, error) {
+func AesDecrypt(crypted, key []byte, ivs []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -561,7 +576,7 @@ func AesDecrypt(crypted, key []byte, ivs ...[]byte) ([]byte, error) {
 	if len(ivs) == 0 {
 		iv = key
 	} else {
-		iv = ivs[0]
+		iv = ivs
 	}
 	blockMode := cipher.NewCBCDecrypter(block, iv[:blockSize])
 	origData := make([]byte, len(crypted))
