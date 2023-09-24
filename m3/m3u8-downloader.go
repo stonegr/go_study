@@ -28,7 +28,7 @@ import (
 
 const (
 	// HEAD_TIMEOUT 请求头超时时间
-	HEAD_TIMEOUT = 10 * time.Second
+	HEAD_TIMEOUT = 20 * time.Second
 	// PROGRESS_WIDTH 进度条长度
 	PROGRESS_WIDTH = 20
 	// TS_NAME_TEMPLATE ts视频片段命名规则
@@ -469,7 +469,7 @@ func mergeTs(downloadDir string, is_save_ts bool, movieName string, pwd string) 
 func DrawProgressBar(prefix string, proportion float32, width int, suffix ...string) {
 	pos := int(proportion * float32(width))
 	s := fmt.Sprintf("[%s] %s%*s %6.2f%% \t%s",
-		prefix, strings.Repeat("■", pos), width-pos, "", proportion*100, strings.Join(suffix, ""))
+		prefix, strings.Repeat("■", pos), width-pos, "", proportion*100, "")
 	fmt.Print("\r" + s)
 }
 
