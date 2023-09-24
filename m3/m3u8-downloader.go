@@ -68,6 +68,8 @@ type TsInfo struct {
 	Url  string
 }
 
+var faild_list chan TsInfo
+
 func init() {
 	logger = log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile)
 }
@@ -145,6 +147,7 @@ func Run() {
 		fmt.Printf("待解密 ts 文件 key : %s \n", ts_key)
 	}
 	ts_list := getTsList(m3u8Url, m3u8Body)
+	faild_list = make(chan TsInfo, len(ts_list))
 	if newfile {
 		// creatNewMF(filepath.Join(download_dir, "main.m3u8"), ts_list, get_d(m3u8Body))
 		subNewM3u8(filepath.Join(download_dir, "main.m3u8"), m3u8Body, getOld(m3u8Body), "")
@@ -168,6 +171,11 @@ func Run() {
 		fmt.Println("")
 	}
 
+	if len(faild_list) > 0 {
+		fail_cap_num := len(faild_list)
+		first_faild_item := <-faild_list
+		logger.Fatalf("下载失败个数: %d, 例子: name: %s,下载失败: %s", fail_cap_num, first_faild_item.Name, first_faild_item.Url)
+	}
 }
 
 // 获取m3u8地址的host
@@ -350,13 +358,14 @@ func downloadTsFile(ts TsInfo, download_dir, key string, retries int, iv string)
 		//logger.Println("[warn] File: " + ts.Name + "already exist")
 		return
 	}
+	if retries < 0 {
+		faild_list <- ts
+		return
+	}
 	res, err := grequests.Get(ts.Url, ro)
 	if err != nil || !res.Ok {
 		if retries > 0 {
 			downloadTsFile(ts, download_dir, key, retries-1, iv)
-			return
-		} else {
-			//logger.Printf("[warn] File :%s", ts.Url)
 			return
 		}
 	}
@@ -398,7 +407,7 @@ func downloadTsFile(ts TsInfo, download_dir, key string, retries int, iv string)
 
 // downloader m3u8 下载器
 func downloader(tsList []TsInfo, maxGoroutines int, downloadDir string, key string, iv string) {
-	retry := 5 //单个 ts 下载重试次数
+	retry := 3 //单个 ts 下载重试次数
 	var wg sync.WaitGroup
 	limiter := make(chan struct{}, maxGoroutines) //chan struct 内存占用 0 bool 占用 1
 	tsLen := len(tsList)
@@ -414,7 +423,6 @@ func downloader(tsList []TsInfo, maxGoroutines int, downloadDir string, key stri
 			downloadTsFile(ts, downloadDir, key, retryies, iv)
 			downloadCount++
 			DrawProgressBar("Downloading", float32(downloadCount)/float32(tsLen), PROGRESS_WIDTH, ts.Name)
-			return
 		}(ts, downloadDir, key, retry)
 	}
 	wg.Wait()
