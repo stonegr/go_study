@@ -142,7 +142,9 @@ func Run() {
 	}
 	m3u8Body = strings.ReplaceAll(m3u8Body, "\r", "")
 	ts_key, iv := getM3u8Key(m3u8Url, m3u8Body)
-	fmt.Println("获取到的IV: ", iv)
+	if iv != "" {
+		fmt.Println("获取到的IV: ", iv)
+	}
 	if ts_key != "" {
 		fmt.Printf("待解密 ts 文件 key : %s \n", ts_key)
 	}
