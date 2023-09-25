@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"net/url"
 )
 
 func main() {
@@ -19,9 +19,8 @@ func main() {
 	// r, _ := url.JoinPath(a, "https://baidu.com")
 	// fmt.Println(r)
 
-	a := "1\n2\r\n3  1\n"
-	fmt.Print(a)
-	fmt.Println("------------------")
-	fmt.Print(strings.Trim(a, "\n\r "))
-	fmt.Println("------------------")
+	a := "https://baidu.cm/cs/ab?a=1"
+	fmt.Println(url.JoinPath(a, "a/b"))
+	fmt.Println(url.JoinPath(a, "/a/b"))
+	fmt.Println(url.JoinPath(a, "https://qq.com"))
 }
